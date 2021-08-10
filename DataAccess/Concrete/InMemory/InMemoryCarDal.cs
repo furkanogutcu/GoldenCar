@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using DataAccess.Abstract;
@@ -15,23 +16,6 @@ namespace DataAccess.Concrete.InMemory
         public InMemoryCarDal()
         {
             _carList = new List<Car>();
-        }
-
-        public Car GetById(int id)
-        {
-            if (_carList.Count > 0)
-            {
-                return _carList.SingleOrDefault(c => c.Id == id);
-            }
-            else
-            {
-                throw new Exception("The car list is empty."); 
-            }
-        }
-
-        public List<Car> GetAll()
-        {
-            return _carList;
         }
 
         public void Add(Car car)
@@ -52,6 +36,16 @@ namespace DataAccess.Concrete.InMemory
         public void Delete(Car car)
         {
             _carList.Remove(_carList.SingleOrDefault(c => c.Id == car.Id));
+        }
+
+        public List<Car> GetAll(Expression<Func<Car, bool>> filter = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Car Get(Expression<Func<Car, bool>> filter)
+        {
+            throw new NotImplementedException();
         }
     }
 }
