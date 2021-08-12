@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccess.Abstract;
 using Entities.Concrete;
+using Entities.DTOs;
 
 namespace DataAccess.Concrete.InMemory
 {
@@ -36,6 +37,11 @@ namespace DataAccess.Concrete.InMemory
         public void Delete(Car car)
         {
             _carList.Remove(_carList.SingleOrDefault(c => c.Id == car.Id));
+        }
+
+        public List<CarDetailDto> GetCarDetails()
+        {
+            throw new NotImplementedException();
         }
 
         public List<Car> GetAll(Expression<Func<Car, bool>> filter = null)
