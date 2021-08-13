@@ -1,7 +1,6 @@
 ﻿using System;
 using Business.Concrete;
 using DataAccess.Concrete.EntityFramework;
-using DataAccess.Concrete.InMemory;
 using Entities.Concrete;
 
 namespace ConsoleUI
@@ -21,7 +20,7 @@ namespace ConsoleUI
             ListCars(carManager);
 
             //GetById
-            Console.WriteLine(carManager.GetById(3).DailyPrice + " (Daily price of the car with id=3)");
+            Console.WriteLine(carManager.GetById(3).Data.DailyPrice + " (Daily price of the car with id=3)");
 
             //Update
             carManager.Update(new Car
@@ -33,10 +32,10 @@ namespace ConsoleUI
                 DailyPrice = 1800,
                 Description = "1.4 liter engine"
             });
-            Console.WriteLine(carManager.GetById(3).DailyPrice + " (New daily price of the car with id=3)");
+            Console.WriteLine(carManager.GetById(3).Data.DailyPrice + " (New daily price of the car with id=3)");
 
             //Delete
-            carManager.Delete(carManager.GetById(2));
+            carManager.Delete(carManager.GetById(2).Data);
             ListCars(carManager);
 
             Console.ReadLine();
@@ -44,7 +43,7 @@ namespace ConsoleUI
 
         private static void ListCars(CarManager carManager)
         {
-            foreach (var car in carManager.GetCarDetails())
+            foreach (var car in carManager.GetCarDetails().Data)
             {
                 Console.WriteLine("ID: {0} , Brand: {1} , Color: {2} , ModelYear: {3} , DailyPrice {4} , Description: {5}",
                     car.Id, car.BrandName, car.ColorName,
