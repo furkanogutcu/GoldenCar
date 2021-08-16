@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Business.Abstract;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation.FluentValidation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
@@ -33,27 +34,23 @@ namespace Business.Concrete
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(),Messages.CarsListed);
         }
 
+        [ValidationAspect(typeof(CarValidator))]
         public IResult Add(Car car)
         {
-            ValidationTool.Validate(new CarValidator(),car);
-            if (car.Description.Length > 1 && car.DailyPrice > 0)
-            {
-                _carDal.Add(car);
-                return new SuccessResult(Messages.CarAdded);
-            }
-            return new ErrorResult(Messages.CarDescriptionInvalid);
+           _carDal.Add(car);
+            return new SuccessResult(Messages.CarAdded);
         }
 
+        [ValidationAspect(typeof(CarValidator))]
         public IResult Update(Car car)
         {
-            ValidationTool.Validate(new CarValidator(), car);
             _carDal.Update(car);
             return new SuccessResult(Messages.CarUpdated);
         }
 
+        [ValidationAspect(typeof(CarValidator))]
         public IResult Delete(Car car)
         {
-            ValidationTool.Validate(new CarValidator(), car);
             _carDal.Delete(car);
             return new SuccessResult(Messages.CarDeleted);
         }
