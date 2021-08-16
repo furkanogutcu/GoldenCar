@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.CrossCuttingConcerns.Validation.FluentValidation;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -44,6 +46,7 @@ namespace Business.Concrete
 
         public IResult Add(Rental rental)
         {
+            ValidationTool.Validate(new RentalValidator(), rental);
             if (!IsCarAvailable(rental))
             {
                 return new ErrorResult(Messages.RentalCarNotAvailable);
@@ -54,12 +57,14 @@ namespace Business.Concrete
 
         public IResult Delete(Rental rental)
         {
+            ValidationTool.Validate(new RentalValidator(), rental);
             _rentalDal.Delete(rental);
             return new SuccessResult(Messages.RentalDeleted);
         }
 
         public IResult Update(Rental rental)
         {
+            ValidationTool.Validate(new RentalValidator(), rental);
             _rentalDal.Update(rental);
             return new SuccessResult(Messages.RentalUpdated);
         }
