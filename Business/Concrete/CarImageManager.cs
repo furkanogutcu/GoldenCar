@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Business;
 using Core.Utilities.Helpers;
 using Core.Utilities.Results;
@@ -42,6 +44,7 @@ namespace Business.Concrete
             return new SuccessDataResult<CarImage>(_carImageDal.Get(c => c.Id == imageId), Messages.CarImageListed);
         }
 
+        [ValidationAspect(typeof(CarImageValidator))]
         public IResult Add(CarImage carImage, IFormFile file)
         {
             IResult rulesResult = BusinessRules.Run(CheckIfCarImageLimit(carImage.CarId));
@@ -61,6 +64,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.CarImageAdded);
         }
 
+        [ValidationAspect(typeof(CarImageValidator))]
         public IResult Update(CarImage carImage, IFormFile file)
         {
             IResult rulesResult = BusinessRules.Run(CheckIfCarImageLimit(carImage.CarId));
