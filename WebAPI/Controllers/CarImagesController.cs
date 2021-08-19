@@ -15,7 +15,7 @@ namespace WebAPI.Controllers
     [ApiController]
     public class CarImagesController : ControllerBase
     {
-        private ICarImageService _carImageService;
+        private readonly ICarImageService _carImageService;
 
         public CarImagesController(ICarImageService carImageService)
         {
@@ -47,7 +47,7 @@ namespace WebAPI.Controllers
         [HttpPost("add")]
         public IActionResult Add([FromForm] CarImage carImage, [FromForm(Name = "ImagePath")] IFormFile file)
         {
-            var result = _carImageService.Add(carImage,file);
+            var result = _carImageService.Add(carImage, file);
             if (result.Success)
             {
                 return Ok(result);

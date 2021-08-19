@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Business.Abstract;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
-using Core.CrossCuttingConcerns.Validation.FluentValidation;
+using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 
 namespace Business.Concrete
 {
-    public class UserManager:IUserService
+    public class UserManager : IUserService
     {
         private readonly IUserDal _userDal;
 
@@ -36,22 +33,63 @@ namespace Business.Concrete
         [ValidationAspect(typeof(UserValidator))]
         public IResult Add(User user)
         {
+            var rulesResult = BusinessRules.Run(CheckIfEmailExist(user.Email));
+            if (rulesResult != null)
+            {
+                return rulesResult;
+            }
+
             _userDal.Add(user);
             return new SuccessResult(Messages.UserAdded);
         }
 
         [ValidationAspect(typeof(UserValidator))]
-        public IResult Delete(User user)
+        public IResult Update(User user)
         {
-            _userDal.Delete(user);
+            var rulesResult = BusinessRules.Run(CheckIfUserIdExist(user.Id)
+                , CheckIfEmailExist(user.Email));
+            if (rulesResult != null)
+            {
+                return rulesResult;
+            }
+
+            _userDal.Update(user);
+            return new SuccessResult(Messages.UserUpdated);
+        }
+
+        public IResult Delete(int userId)
+        {
+            var rulesResult = BusinessRules.Run(CheckIfUserIdExist(userId));
+            if (rulesResult != null)
+            {
+                return rulesResult;
+            }
+
+            var deletedUser = _userDal.Get(u => u.Id == userId);
+            _userDal.Delete(deletedUser);
             return new SuccessResult(Messages.UserDeleted);
         }
 
-        [ValidationAspect(typeof(UserValidator))]
-        public IResult Update(User user)
+        //Business Rules
+
+        private IResult CheckIfUserIdExist(int userId)
         {
-            _userDal.Update(user);
-            return new SuccessResult(Messages.UserUpdated);
+            var result = _userDal.GetAll(u => u.Id == userId).Any();
+            if (!result)
+            {
+                return new ErrorResult(Messages.UserNotExist);
+            }
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfEmailExist(string userEmail)
+        {
+            var result = _userDal.GetAll(u => u.Email == userEmail).Any();
+            if (result)
+            {
+                return new ErrorResult(Messages.UserEmailExist);
+            }
+            return new SuccessResult();
         }
     }
 }

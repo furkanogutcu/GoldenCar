@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Core.Utilities.Results;
 using Entities.Concrete;
 
@@ -13,7 +9,7 @@ namespace Business.Abstract
         IDataResult<List<User>> GetAll();
         IDataResult<User> GetUserById(int userId);
         IResult Add(User user);
-        IResult Delete(User user);
+        IResult Delete(int userId);
         IResult Update(User user);
     }
 }
