@@ -1,5 +1,6 @@
 ﻿using System;
 using Business.Concrete;
+using Core.Entities.Concrete;
 using DataAccess.Concrete.EntityFramework;
 using Entities.Concrete;
 
@@ -52,16 +53,16 @@ namespace ConsoleUI
 
         private static void UserManagerAddTest(UserManager userManager)
         {
-            userManager.Add(new User { FirstName = "TestName1", LastName = "TestSurname1", Email = "test1@.com", Password = "123456789" });
-            userManager.Add(new User { FirstName = "TestName2", LastName = "TestSurname2", Email = "test2@.com", Password = "987654321" });
-            userManager.Add(new User { FirstName = "TestName3", LastName = "TestSurname3", Email = "test3@.com", Password = "123456789" });
-            userManager.Add(new User { FirstName = "TestName4", LastName = "TestSurname4", Email = "test4@.com", Password = "987654321" });
-            userManager.Add(new User { FirstName = "TestName5", LastName = "TestSurname5", Email = "test5@.com", Password = "123456789" });
-            userManager.Add(new User { FirstName = "TestName6", LastName = "TestSurname6", Email = "test6@.com", Password = "987654321" });
-            userManager.Add(new User { FirstName = "TestName7", LastName = "TestSurname7", Email = "test7@.com", Password = "123456789" });
-            userManager.Add(new User { FirstName = "TestName8", LastName = "TestSurname8", Email = "test8@.com", Password = "987654321" });
-            userManager.Add(new User { FirstName = "TestName9", LastName = "TestSurname9", Email = "test9@.com", Password = "123456789" });
-            userManager.Add(new User { FirstName = "TestName10", LastName = "TestSurname10", Email = "test10@.com", Password = "987654321" });
+            //userManager.Add(new User { FirstName = "TestName1", LastName = "TestSurname1", Email = "test1@.com", Password = "123456789" });
+            //userManager.Add(new User { FirstName = "TestName2", LastName = "TestSurname2", Email = "test2@.com", Password = "987654321" });
+            //userManager.Add(new User { FirstName = "TestName3", LastName = "TestSurname3", Email = "test3@.com", Password = "123456789" });
+            //userManager.Add(new User { FirstName = "TestName4", LastName = "TestSurname4", Email = "test4@.com", Password = "987654321" });
+            //userManager.Add(new User { FirstName = "TestName5", LastName = "TestSurname5", Email = "test5@.com", Password = "123456789" });
+            //userManager.Add(new User { FirstName = "TestName6", LastName = "TestSurname6", Email = "test6@.com", Password = "987654321" });
+            //userManager.Add(new User { FirstName = "TestName7", LastName = "TestSurname7", Email = "test7@.com", Password = "123456789" });
+            //userManager.Add(new User { FirstName = "TestName8", LastName = "TestSurname8", Email = "test8@.com", Password = "987654321" });
+            //userManager.Add(new User { FirstName = "TestName9", LastName = "TestSurname9", Email = "test9@.com", Password = "123456789" });
+            //userManager.Add(new User { FirstName = "TestName10", LastName = "TestSurname10", Email = "test10@.com", Password = "987654321" });
         }
 
         private static void CarManagerAddTest(CarManager carManager)
