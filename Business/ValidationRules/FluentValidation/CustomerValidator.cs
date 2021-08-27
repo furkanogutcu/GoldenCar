@@ -13,7 +13,7 @@ namespace Business.ValidationRules.FluentValidation
             RuleFor(c => c.CompanyName).NotEmpty();
             RuleFor(c => c.CompanyName).NotNull();
             RuleFor(c => c.CompanyName).MinimumLength(3);
-            RuleFor(c => c.CompanyName).MaximumLength(20);
+            RuleFor(c => c.CompanyName).MaximumLength(50);
         }
     }
 }
