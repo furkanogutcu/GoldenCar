@@ -60,5 +60,13 @@
         public static string CarImageIdNotExist = "Araba resmi mevcut degil";
         public static string UserAlreadyCustomer = "Kullanici zaten bir musteridir";
         public static string GetDefaultImage = "Arabanin bir resmi olmadigi icin varsayilan resim getirildi";
+
+        public static string AuthorizationDenied = "Bu islemi yapmak icin yetkiniz yok";
+        public static string UserRegistered = "Kullanici kayit basarili";
+        public static string UserNotFound = "Kullanici bulunamadi";
+        public static string PasswordError = "Sifre hatali";
+        public static string SuccessfulLogin = "Giris basarili";
+        public static string UserAlreadyExists = "Kullanici zaten sisteme kayitli";
+        public static string AccessTokenCreated = "Token basariyla olusturuldu";
     }
 }

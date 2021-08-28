@@ -8,7 +8,6 @@ using Core.Entities.Concrete;
 using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
-using Entities.Concrete;
 
 namespace Business.Concrete
 {
@@ -56,6 +55,23 @@ namespace Business.Concrete
 
             _userDal.Update(user);
             return new SuccessResult(Messages.UserUpdated);
+        }
+
+        [ValidationAspect(typeof(UserValidator))]
+        public IDataResult<List<OperationClaim>> GetClaims(User user)
+        {
+            var rulesResult = BusinessRules.Run(CheckIfUserIdExist(user.Id));
+            if (rulesResult != null)
+            {
+                return new ErrorDataResult<List<OperationClaim>>(rulesResult.Message);
+            }
+
+            return new SuccessDataResult<List<OperationClaim>>(_userDal.GetClaims(user));
+        }
+
+        public IDataResult<User> GetUserByMail(string email)
+        {
+            return new SuccessDataResult<User>(_userDal.Get(u => u.Email == email));
         }
 
         public IResult Delete(int userId)
