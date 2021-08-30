@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Business.Abstract;
+using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
@@ -20,16 +21,19 @@ namespace Business.Concrete
             _brandDal = brandDal;
         }
 
+        [SecuredOperation("admin,brand.all,brand.list")]
         public IDataResult<Brand> GetBrandById(int id)
         {
             return new SuccessDataResult<Brand>(_brandDal.Get(b => b.Id == id), Messages.BrandListed);
         }
 
+        [SecuredOperation("admin,brand.all,brand.list")]
         public IDataResult<List<Brand>> GetAll()
         {
             return new SuccessDataResult<List<Brand>>(_brandDal.GetAll(), Messages.BrandsListed);
         }
 
+        [SecuredOperation("admin,brand.all,brand.add")]
         [ValidationAspect(typeof(BrandValidator))]
         public IResult Add(Brand brand)
         {
@@ -43,6 +47,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.BrandAdded);
         }
 
+        [SecuredOperation("admin,brand.all,brand.update")]
         [ValidationAspect(typeof(BrandValidator))]
         public IResult Update(Brand brand)
         {
@@ -57,7 +62,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.BrandUpdated);
         }
 
-
+        [SecuredOperation("admin,brand.all,brand.delete")]
         public IResult Delete(int brandId)
         {
             var rulesResult = BusinessRules.Run(CheckIfBrandIdExist(brandId));

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Business.Abstract;
+using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
@@ -20,16 +21,19 @@ namespace Business.Concrete
             _colorDal = colorDal;
         }
 
+        [SecuredOperation("admin,color.all,color.list")]
         public IDataResult<Color> GetColorById(int id)
         {
             return new SuccessDataResult<Color>(_colorDal.Get(c => c.Id == id), Messages.ColorListed);
         }
 
+        [SecuredOperation("admin,color.all,color.list")]
         public IDataResult<List<Color>> GetAll()
         {
             return new SuccessDataResult<List<Color>>(_colorDal.GetAll(), Messages.ColorsListed);
         }
 
+        [SecuredOperation("admin,color.all,color.add")]
         [ValidationAspect(typeof(ColorValidator))]
         public IResult Add(Color color)
         {
@@ -43,6 +47,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.ColorAdded);
         }
 
+        [SecuredOperation("admin,color.all,color.update")]
         [ValidationAspect(typeof(ColorValidator))]
         public IResult Update(Color color)
         {
@@ -57,7 +62,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.ColorUpdated);
         }
 
-
+        [SecuredOperation("admin,color.all,color.delete")]
         public IResult Delete(int colorId)
         {
             var rulesResult = BusinessRules.Run(CheckIfColorIdExist(colorId));

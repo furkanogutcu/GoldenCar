@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Business.Abstract;
+using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
@@ -22,27 +23,32 @@ namespace Business.Concrete
             _rentalDal = rentalDal;
         }
 
+        [SecuredOperation("admin,rental.all,rental.list")]
         public IDataResult<List<Rental>> GetAll()
         {
             return new SuccessDataResult<List<Rental>>(_rentalDal.GetAll(), Messages.RentalsListed);
         }
 
+        [SecuredOperation("admin,rental.all,rental.list")]
         public IDataResult<Rental> GetRentalById(int rentalId)
         {
             return new SuccessDataResult<Rental>(_rentalDal.Get(r => r.Id == rentalId), Messages.RentalListed);
         }
 
+        [SecuredOperation("admin,rental.all,rental.list")]
         public IDataResult<List<Rental>> GetCanBeRented()
         {
             return new SuccessDataResult<List<Rental>>(_rentalDal.GetAll(r => r.ReturnDate < DateTime.Now.Date),
                 Messages.RentalsListed);
         }
 
+        [SecuredOperation("admin,rental.all,rental.list")]
         public IDataResult<List<RentalDetailDto>> GetRentalsDetails()
         {
             return new SuccessDataResult<List<RentalDetailDto>>(_rentalDal.GetRentalsDto(), Messages.RentalsListed);
         }
 
+        [SecuredOperation("admin,rental.all,rental.add")]
         [ValidationAspect(typeof(RentalValidator))]
         public IResult Add(Rental rental)
         {
@@ -54,6 +60,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.RentalAdded);
         }
 
+        [SecuredOperation("admin,rental.all,rental.update")]
         [ValidationAspect(typeof(RentalValidator))]
         public IResult Update(Rental rental)
         {
@@ -67,7 +74,7 @@ namespace Business.Concrete
             return new SuccessResult(Messages.RentalUpdated);
         }
 
-
+        [SecuredOperation("admin,rental.all,rental.delete")]
         public IResult Delete(int rentalId)
         {
             var rulesResult = BusinessRules.Run(CheckIfRentalIdExist(rentalId));
