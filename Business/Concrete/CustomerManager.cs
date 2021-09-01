@@ -4,6 +4,7 @@ using Business.Abstract;
 using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Caching;
 using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Business;
 using Core.Utilities.Results;
@@ -23,18 +24,21 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,customer.all,customer.list")]
+        [CacheAspect(10)]
         public IDataResult<List<Customer>> GetAll()
         {
             return new SuccessDataResult<List<Customer>>(_customerDal.GetAll(), Messages.CustomersListed);
         }
 
         [SecuredOperation("admin,customer.all,customer.list")]
+        [CacheAspect(10)]
         public IDataResult<Customer> GetCustomerById(int customerId)
         {
             return new SuccessDataResult<Customer>(_customerDal.Get(c=>c.Id == customerId), Messages.CustomerListed);
         }
 
         [SecuredOperation("admin,customer.all,customer.list")]
+        [CacheAspect(10)]
         public IDataResult<List<CustomerDetailDto>> GetCustomersDetails()
         {
             return new SuccessDataResult<List<CustomerDetailDto>>(_customerDal.GetCustomersDetail(), Messages.CustomersListed);
@@ -42,6 +46,7 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,customer.all,customer.add")]
         [ValidationAspect(typeof(CustomerValidator))]
+        [CacheRemoveAspect("ICustomerService.Get")]
         public IResult Add(Customer customer)
         {
             var rulesResult = BusinessRules.Run(CheckIfUserIdExist(customer.UserId));
@@ -56,6 +61,7 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,customer.all,customer.update")]
         [ValidationAspect(typeof(CustomerValidator))]
+        [CacheRemoveAspect("ICustomerService.Get")]
         public IResult Update(Customer customer)
         {
             var rulesResult = BusinessRules.Run(CheckIfCustomerIdExist(customer.Id));
@@ -69,6 +75,7 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,customer.all,customer.delete")]
+        [CacheRemoveAspect("ICustomerService.Get")]
         public IResult Delete(int customerId)
         {
             var rulesResult = BusinessRules.Run(CheckIfCustomerIdExist(customerId));

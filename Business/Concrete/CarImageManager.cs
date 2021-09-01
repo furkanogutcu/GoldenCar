@@ -5,6 +5,7 @@ using Business.Abstract;
 using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Caching;
 using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Business;
 using Core.Utilities.Helpers;
@@ -25,12 +26,14 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,carimage.all,carimage.list")]
+        [CacheAspect(10)]
         public IDataResult<List<CarImage>> GetAll()
         {
             return new SuccessDataResult<List<CarImage>>(_carImageDal.GetAll(), Messages.CarsImagesListed);
         }
 
         [SecuredOperation("admin,carimage.all,carimage.list")]
+        [CacheAspect(10)]
         public IDataResult<List<CarImage>> GetCarImages(int carId)
         {
             var checkIfCarImage = CheckIfCarHasImage(carId);
@@ -41,6 +44,7 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,carimage.all,carimage.list")]
+        [CacheAspect(10)]
         public IDataResult<CarImage> GetById(int imageId)
         {
             return new SuccessDataResult<CarImage>(_carImageDal.Get(c => c.Id == imageId), Messages.CarImageListed);
@@ -48,6 +52,7 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,carimage.all,carimage.add")]
         [ValidationAspect(typeof(CarImageValidator))]
+        [CacheRemoveAspect("ICarImageService.Get")]
         public IResult Add(CarImage carImage, IFormFile file)
         {
             IResult rulesResult = BusinessRules.Run(CheckIfCarImageLimitExceeded(carImage.CarId));
@@ -69,6 +74,7 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,carimage.all,carimage.update")]
         [ValidationAspect(typeof(CarImageValidator))]
+        [CacheRemoveAspect("ICarImageService.Get")]
         public IResult Update(CarImage carImage, IFormFile file)
         {
             IResult rulesResult = BusinessRules.Run(CheckIfCarImageIdExist(carImage.Id),
@@ -91,6 +97,7 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,carimage.all,carimage.delete")]
+        [CacheRemoveAspect("ICarImageService.Get")]
         public IResult Delete(int imageId)
         {
             IResult rulesResult = BusinessRules.Run(CheckIfCarImageIdExist(imageId));
