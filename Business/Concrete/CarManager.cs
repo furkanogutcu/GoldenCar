@@ -91,9 +91,30 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
-        public IDataResult<List<CarDetailDto>> GetCarDetails()
+        public IDataResult<List<CarDetailDto>> GetCarsWithDetails()
         {
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(), Messages.CarsListed);
+        }
+
+        [SecuredOperation("admin,car.all,car.list")]
+        [CacheAspect(10)]
+        public IDataResult<CarDetailDto> GetCarDetails(int carId)
+        {
+            return new SuccessDataResult<CarDetailDto>(_carDal.GetCarDetails(c => c.Id == carId).SingleOrDefault(), Messages.CarListed);
+        }
+
+        [SecuredOperation("admin,car.all,car.list")]
+        [CacheAspect(10)]
+        public IDataResult<List<CarDetailDto>> GetCarsByBrandIdWithDetails(int brandId)
+        {
+            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c=>c.BrandId==brandId), Messages.CarsListed);
+        }
+
+        [SecuredOperation("admin,car.all,car.list")]
+        [CacheAspect(10)]
+        public IDataResult<List<CarDetailDto>> GetCarsByColorIdWithDetails(int colorId)
+        {
+            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c => c.ColorId == colorId), Messages.CarsListed);
         }
 
         //Business Rules
