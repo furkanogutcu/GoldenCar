@@ -37,7 +37,7 @@ namespace DataAccess.Concrete.InMemory
             _carList.Remove(_carList.SingleOrDefault(c => c.Id == car.Id));
         }
 
-        public List<CarDetailDto> GetCarDetails()
+        public List<CarDetailDto> GetCarDetails(Expression<Func<CarDetailDto, bool>> filter = null)
         {
             throw new NotImplementedException();
         }
