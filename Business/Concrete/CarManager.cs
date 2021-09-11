@@ -117,6 +117,13 @@ namespace Business.Concrete
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c => c.ColorId == colorId), Messages.CarsListed);
         }
 
+        [SecuredOperation("admin,car.all,car.list")]
+        [CacheAspect(10)]
+        public IDataResult<List<CarDetailDto>> GetCarsByFilterWithDetails(int brandId, int colorId)
+        {
+            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c => c.BrandId == brandId && c.ColorId == colorId), Messages.CarsListed);
+        }
+
         //Business Rules
 
         private IResult CheckIfCarIdExist(int carId)
