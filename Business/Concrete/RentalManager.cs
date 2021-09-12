@@ -50,7 +50,14 @@ namespace Business.Concrete
         [CacheAspect(10)]
         public IDataResult<List<RentalDetailDto>> GetRentalsDetails()
         {
-            return new SuccessDataResult<List<RentalDetailDto>>(_rentalDal.GetRentalsDto(), Messages.RentalsListed);
+            return new SuccessDataResult<List<RentalDetailDto>>(_rentalDal.GetRentalsDetails(), Messages.RentalsListed);
+        }
+
+        [SecuredOperation("admin,rental.all,rental.list")]
+        [CacheAspect(10)]
+        public IDataResult<List<RentalDetailDto>> GetRentalsByCustomerIdWithDetails(int customerId)
+        {
+            return new SuccessDataResult<List<RentalDetailDto>>(_rentalDal.GetRentalsDetails(r=>r.CustomerId==customerId), Messages.RentalsListed);
         }
 
         [SecuredOperation("admin,rental.all,rental.add")]
@@ -58,11 +65,11 @@ namespace Business.Concrete
         [CacheRemoveAspect("IRentalService.Get")]
         public IResult Add(Rental rental)
         {
-            if (!IsCarAvailable(rental))
+            if (!IsCarAvailable(rental.CarId))
             {
                 return new ErrorResult(Messages.RentalCarNotAvailable);
             }
-            _rentalDal.Add(rental);
+            _rentalDal.Add(CheckDelivered(rental));
             return new SuccessResult(Messages.RentalAdded);
         }
 
@@ -98,9 +105,11 @@ namespace Business.Concrete
 
         //Business Rules
 
-        private bool IsCarAvailable(Rental rental)
+        private bool IsCarAvailable(int carId)
         {
-            return !(_rentalDal.GetAll(r => r.CarId == rental.CarId && r.ReturnDate == null).Any());
+            var currentRental = _rentalDal.GetAll().LastOrDefault(r=>r.CarId == carId && r.Delivered==false);
+            bool isCarAvailable = currentRental == null;
+            return isCarAvailable;
         }
 
         private IResult CheckIfRentalIdExist(int rentalId)
@@ -111,6 +120,22 @@ namespace Business.Concrete
                 return new ErrorResult(Messages.RentalNotExist);
             }
             return new SuccessResult();
+        }
+
+        private Rental CheckDelivered(Rental rental)
+        {
+            if (rental.Delivered == true)
+            {
+                return new Rental
+                {
+                    CarId = rental.CarId,
+                    CustomerId = rental.CustomerId,
+                    RentDate = rental.RentDate,
+                    ReturnDate = rental.ReturnDate,
+                    Delivered = false
+                };
+            }
+            return rental;
         }
     }
 }

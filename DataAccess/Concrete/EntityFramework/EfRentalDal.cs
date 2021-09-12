@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Core.DataAccess.EntityFramework;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -9,7 +11,7 @@ namespace DataAccess.Concrete.EntityFramework
 {
     public class EfRentalDal:EfEntityRepositoryBase<Rental,RentACarContext>,IRentalDal
     {
-        public List<RentalDetailDto> GetRentalsDto()
+        public List<RentalDetailDto> GetRentalsDetails(Expression<Func<RentalDetailDto, bool>> filter = null)
         {
             using (RentACarContext context = new RentACarContext())
             {
@@ -25,13 +27,18 @@ namespace DataAccess.Concrete.EntityFramework
                     select new RentalDetailDto
                     {
                         Id = r.Id,
-                        BrandName = b.Name,
+                        CarId = c.Id,
+                        ModelFullName = $"{b.Name} {c.ModelName}",
+                        CustomerId = cu.Id,
                         CustomerFullName = $"{u.FirstName} {u.LastName}",
-                        ReturnDate = r.ReturnDate.Value,
+                        ReturnDate = r.ReturnDate,
                         DailyPrice = c.DailyPrice,
-                        RentDate = r.RentDate.Value
+                        RentDate = r.RentDate,
+                        Delivered = r.Delivered
                     };
-                return result.ToList();
+                return filter == null
+                    ? result.ToList()
+                    : result.Where(filter).ToList();
             }
         }
     }

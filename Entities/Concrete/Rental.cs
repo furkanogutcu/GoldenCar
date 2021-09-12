@@ -8,7 +8,8 @@ namespace Entities.Concrete
         public int Id { get; set; }
         public int CarId { get; set; }
         public int CustomerId { get; set; }
-        public DateTime? RentDate { get; set; } //Datetime = Values cannot be null -- Datetime? = Nullable Datetime (Values can be null)
-        public DateTime? ReturnDate { get; set; }
+        public DateTime RentDate { get; set; }
+        public DateTime ReturnDate { get; set; }
+        public bool Delivered { get; set; }
     }
 }
