@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using Business.Abstract;
 using Entities.Concrete;
 
@@ -37,10 +38,21 @@ namespace WebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("getcanberented")]
-        public IActionResult GetCanBeRented()
+        [HttpGet("checkifcancarberentednow")]
+        public IActionResult GetCanCarBeRented(int carId)
         {
-            var result = _rentalService.GetCanBeRented();
+            var result = _rentalService.CheckIfCanCarBeRentedNow(carId);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpGet("checkifanyreservationsbetweenselecteddates")]
+        public IActionResult CheckIfCanCarBeRentedBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate)
+        {
+            var result = _rentalService.CheckIfAnyReservationsBetweenSelectedDates(carId,rentDate,returnDate);
             if (result.Success)
             {
                 return Ok(result);

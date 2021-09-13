@@ -10,6 +10,6 @@ namespace Entities.Concrete
         public int CustomerId { get; set; }
         public DateTime RentDate { get; set; }
         public DateTime ReturnDate { get; set; }
-        public bool Delivered { get; set; }
+        public bool? DeliveryStatus { get; set; }
     }
 }

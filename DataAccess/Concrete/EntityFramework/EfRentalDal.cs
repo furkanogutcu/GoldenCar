@@ -34,7 +34,7 @@ namespace DataAccess.Concrete.EntityFramework
                         ReturnDate = r.ReturnDate,
                         DailyPrice = c.DailyPrice,
                         RentDate = r.RentDate,
-                        Delivered = r.Delivered
+                        DeliveryStatus = r.DeliveryStatus
                     };
                 return filter == null
                     ? result.ToList()

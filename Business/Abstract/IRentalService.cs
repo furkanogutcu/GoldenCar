@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Core.Utilities.Results;
 using Entities.Concrete;
 using Entities.DTOs;
@@ -9,7 +10,8 @@ namespace Business.Abstract
     {
         IDataResult<List<Rental>> GetAll();
         IDataResult<Rental> GetRentalById(int rentalId);
-        IDataResult<List<Rental>> GetCanBeRented();
+        IDataResult<bool> CheckIfCanCarBeRentedNow(int carId);
+        IDataResult<bool> CheckIfAnyReservationsBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate);
         IDataResult<List<RentalDetailDto>> GetRentalsDetails();
         IDataResult<List<RentalDetailDto>> GetRentalsByCustomerIdWithDetails(int customerId);
         IResult Add(Rental rental);

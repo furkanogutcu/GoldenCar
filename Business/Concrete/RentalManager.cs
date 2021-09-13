@@ -39,11 +39,20 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,rental.all,rental.list")]
-        [CacheAspect(10)]
-        public IDataResult<List<Rental>> GetCanBeRented()
+        public IDataResult<bool> CheckIfCanCarBeRentedNow(int carId)
         {
-            return new SuccessDataResult<List<Rental>>(_rentalDal.GetAll(r => r.ReturnDate < DateTime.Now.Date),
-                Messages.RentalsListed);
+            var rulesResult = BusinessRules.Run(CheckIfCarAvailableNow(carId));
+            if (rulesResult != null)
+            {
+                return new ErrorDataResult<bool>(false, rulesResult.Message);
+            }
+            return new SuccessDataResult<bool>(true);
+        }
+
+        [SecuredOperation("admin,rental.all,rental.list")]
+        public IDataResult<bool> CheckIfAnyReservationsBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate)
+        {
+            return CheckIfCarAvailableBetweenSelectedDatesForReservations(carId, rentDate, returnDate);
         }
 
         [SecuredOperation("admin,rental.all,rental.list")]
@@ -57,7 +66,7 @@ namespace Business.Concrete
         [CacheAspect(10)]
         public IDataResult<List<RentalDetailDto>> GetRentalsByCustomerIdWithDetails(int customerId)
         {
-            return new SuccessDataResult<List<RentalDetailDto>>(_rentalDal.GetRentalsDetails(r=>r.CustomerId==customerId), Messages.RentalsListed);
+            return new SuccessDataResult<List<RentalDetailDto>>(_rentalDal.GetRentalsDetails(r => r.CustomerId == customerId), Messages.RentalsListed);
         }
 
         [SecuredOperation("admin,rental.all,rental.add")]
@@ -65,11 +74,28 @@ namespace Business.Concrete
         [CacheRemoveAspect("IRentalService.Get")]
         public IResult Add(Rental rental)
         {
-            if (!IsCarAvailable(rental.CarId))
+            IResult rulesResult;
+
+            if (rental.RentDate > DateTime.Now) //Reservation
             {
-                return new ErrorResult(Messages.RentalCarNotAvailable);
+                rulesResult = BusinessRules.Run(CheckIfCarAvailableBetweenSelectedDatesForReservations(rental.CarId, rental.RentDate, rental.ReturnDate),
+                    DeliveryStatusShieldForAddOperation(rental));
+
+                if (!CheckIfCarAvailableNow(rental.CarId).Success && rental.RentDate < GetReturnDateOfRentedCar(rental.CarId).Data)
+                {
+                    return new ErrorResult(Messages.CarAlreadyRentedByTheReservationDate);
+                }
             }
-            _rentalDal.Add(CheckDelivered(rental));
+            else //Rent now
+            {
+                rulesResult = BusinessRules.Run(CheckIfCarAvailableNow(rental.CarId),
+                    DeliveryStatusShieldForAddOperation(rental));
+            }
+            if (rulesResult != null)
+            {
+                return rulesResult;
+            }
+            _rentalDal.Add(rental);
             return new SuccessResult(Messages.RentalAdded);
         }
 
@@ -78,7 +104,25 @@ namespace Business.Concrete
         [CacheRemoveAspect("IRentalService.Get")]
         public IResult Update(Rental rental)
         {
-            var rulesResult = BusinessRules.Run(CheckIfRentalIdExist(rental.Id));
+            IResult rulesResult;
+
+            if (rental.RentDate > DateTime.Now) //Reservation update
+            {
+                rulesResult = BusinessRules.Run(CheckIfCarAvailableBetweenSelectedDatesForCurrentRentals(rental.CarId, rental.RentDate, rental.ReturnDate),
+                    DeliveryStatusShieldForUpdateOperation(rental));
+
+                if (!CheckIfCarAvailableNow(rental.CarId).Success && rental.RentDate < GetReturnDateOfRentedCar(rental.CarId).Data)
+                {
+                    return new ErrorResult(Messages.CarAlreadyRentedByTheReservationDate);
+                }
+            }
+            else //Normal Update
+            {
+                rulesResult = BusinessRules.Run(CheckIfCarAvailableBetweenSelectedDatesForReservations(rental.CarId, rental.RentDate, rental.ReturnDate),
+                    DeliveryStatusShieldForUpdateOperation(rental));
+            }
+
+
             if (rulesResult != null)
             {
                 return rulesResult;
@@ -105,11 +149,47 @@ namespace Business.Concrete
 
         //Business Rules
 
-        private bool IsCarAvailable(int carId)
+        private IResult CheckIfCarAvailableNow(int carId)
         {
-            var currentRental = _rentalDal.GetAll().LastOrDefault(r=>r.CarId == carId && r.Delivered==false);
-            bool isCarAvailable = currentRental == null;
-            return isCarAvailable;
+            var result = (_rentalDal.GetAll(r => r.CarId == carId && r.RentDate <= DateTime.Now && r.ReturnDate >= DateTime.Now && r.DeliveryStatus == false).Any());
+            if (result)
+            {
+                return new ErrorResult(Messages.RentalCarNotAvailable);
+            }
+
+            return new SuccessResult();
+        }
+
+        private IDataResult<DateTime> GetReturnDateOfRentedCar(int carId)
+        {
+            return new SuccessDataResult<DateTime>(_rentalDal.Get(r => r.CarId == carId && r.RentDate <= DateTime.Now && r.ReturnDate >= DateTime.Now && r.DeliveryStatus == false).ReturnDate);
+        }
+
+        private IDataResult<bool> CheckIfCarAvailableBetweenSelectedDatesForReservations(int carId, DateTime rentDate, DateTime returnDate)
+        {
+            return BaseCheckIfCarAvailableBetweenSelectedDates(carId, rentDate, returnDate, null);
+        }
+
+        private IDataResult<bool> CheckIfCarAvailableBetweenSelectedDatesForCurrentRentals(int carId, DateTime rentDate, DateTime returnDate)
+        {
+            return BaseCheckIfCarAvailableBetweenSelectedDates(carId, rentDate, returnDate, false);
+        }
+
+        private IDataResult<bool> BaseCheckIfCarAvailableBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate, bool? deliveryStatus)
+        {
+            var allRentals = _rentalDal.GetAll(r => r.CarId == carId && r.DeliveryStatus == deliveryStatus);
+
+            foreach (var reservation in allRentals)
+            {
+                if ((rentDate >= reservation.RentDate && rentDate <= reservation.ReturnDate) ||
+                    (returnDate >= reservation.RentDate && returnDate <= reservation.ReturnDate) ||
+                    (reservation.RentDate >= rentDate && reservation.RentDate <= returnDate) ||
+                    (reservation.ReturnDate >= rentDate && reservation.ReturnDate <= returnDate))
+                {
+                    return new ErrorDataResult<bool>(false, Messages.ReservationBetweenSelectedDatesExist);
+                }
+            }
+            return new SuccessDataResult<bool>(true, Messages.CarCanBeRentedBetweenSelectedDates);
         }
 
         private IResult CheckIfRentalIdExist(int rentalId)
@@ -122,20 +202,66 @@ namespace Business.Concrete
             return new SuccessResult();
         }
 
-        private Rental CheckDelivered(Rental rental)
+        private IResult DeliveryStatusShieldForAddOperation(Rental rental)
         {
-            if (rental.Delivered == true)
+            if (rental.RentDate <= DateTime.Now && rental.ReturnDate <= DateTime.Now)
             {
-                return new Rental
+                if (rental.DeliveryStatus == null)
                 {
-                    CarId = rental.CarId,
-                    CustomerId = rental.CustomerId,
-                    RentDate = rental.RentDate,
-                    ReturnDate = rental.ReturnDate,
-                    Delivered = false
-                };
+                    return new ErrorResult(Messages.DeliveryStatusCanNotBeNull);
+                }
+
+                return new SuccessResult();
             }
-            return rental;
+            else if (rental.RentDate <= DateTime.Now && rental.ReturnDate >= DateTime.Now) //Normal
+            {
+                if (rental.DeliveryStatus != false)
+                {
+                    return new ErrorResult(Messages.DeliveryStatusMustBeFalse);
+                }
+
+                return new SuccessResult();
+            }
+            else //Reservation
+            {
+                if (rental.DeliveryStatus != null)
+                {
+                    return new ErrorResult(Messages.DeliveryStatusMustBeNull);
+                }
+
+                return new SuccessResult();
+            }
+        }
+
+        private IResult DeliveryStatusShieldForUpdateOperation(Rental rental)
+        {
+            if (rental.RentDate <= DateTime.Now && rental.ReturnDate <= DateTime.Now)
+            {
+                if (rental.DeliveryStatus == null)
+                {
+                    return new ErrorResult(Messages.DeliveryStatusCanNotBeNull);
+                }
+
+                return new SuccessResult();
+            }
+            else if (rental.RentDate <= DateTime.Now && rental.ReturnDate >= DateTime.Now) //Normal
+            {
+                if (rental.DeliveryStatus == null)
+                {
+                    return new ErrorResult(Messages.DeliveryStatusCanNotBeNull);
+                }
+
+                return new SuccessResult();
+            }
+            else //Reservation
+            {
+                if (rental.DeliveryStatus != null)
+                {
+                    return new ErrorResult(Messages.DeliveryStatusMustBeNull);
+                }
+
+                return new SuccessResult();
+            }
         }
     }
 }

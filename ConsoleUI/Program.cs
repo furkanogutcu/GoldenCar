@@ -57,7 +57,7 @@ namespace ConsoleUI
                     CustomerId = randomCustomerId,
                     RentDate = DateTime.Now.AddHours(-randomCarId).AddMinutes(-randomCustomerId),
                     ReturnDate = DateTime.Now.AddHours(randomCustomerId).AddMinutes(randomCarId),
-                    Delivered = false
+                    DeliveryStatus = false
                 };
                 rentalManager.Add(addedRental);
                 carIds.Remove(randomCarId);
