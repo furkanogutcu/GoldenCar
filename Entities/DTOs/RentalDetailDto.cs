@@ -13,6 +13,8 @@ namespace Entities.DTOs
         public decimal DailyPrice { get; set; }
         public DateTime RentDate { get; set; }
         public DateTime ReturnDate { get; set; }
+        public int PaymentId { get; set; }
+        public DateTime PaymentDate { get; set; }
         public bool? DeliveryStatus { get; set; }
     }
 }

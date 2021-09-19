@@ -49,10 +49,10 @@ namespace WebAPI.Controllers
             return BadRequest(result);
         }
 
-        [HttpGet("checkifanyreservationsbetweenselecteddates")]
+        [HttpGet("checkifcancarberentedbetweenselecteddates")]
         public IActionResult CheckIfCanCarBeRentedBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate)
         {
-            var result = _rentalService.CheckIfAnyReservationsBetweenSelectedDates(carId,rentDate,returnDate);
+            var result = _rentalService.CheckIfAnyRentalBetweenSelectedDates(carId, rentDate, returnDate);
             if (result.Success)
             {
                 return Ok(result);
@@ -108,6 +108,17 @@ namespace WebAPI.Controllers
         public IActionResult Update(Rental rental)
         {
             var result = _rentalService.Update(rental);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpPost("rent")]
+        public IActionResult Rent(RentPaymentRequest rentPaymentRequest)
+        {
+            var result = _rentalService.Rent(rentPaymentRequest);
             if (result.Success)
             {
                 return Ok(result);

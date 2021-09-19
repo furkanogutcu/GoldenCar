@@ -6,6 +6,7 @@ using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Caching;
+using Core.Aspects.Autofac.Transaction;
 using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Business;
 using Core.Utilities.Results;
@@ -18,10 +19,16 @@ namespace Business.Concrete
     public class RentalManager : IRentalService
     {
         private readonly IRentalDal _rentalDal;
+        private readonly IPaymentService _paymentService;
+        private readonly ICreditCardService _creditCardService;
+        private readonly ICarService _carService;
 
-        public RentalManager(IRentalDal rentalDal)
+        public RentalManager(IRentalDal rentalDal, IPaymentService paymentService, ICreditCardService creditCardService, ICarService carService)
         {
             _rentalDal = rentalDal;
+            _paymentService = paymentService;
+            _creditCardService = creditCardService;
+            _carService = carService;
         }
 
         [SecuredOperation("admin,rental.all,rental.list")]
@@ -50,9 +57,13 @@ namespace Business.Concrete
         }
 
         [SecuredOperation("admin,rental.all,rental.list")]
-        public IDataResult<bool> CheckIfAnyReservationsBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate)
+        public IDataResult<bool> CheckIfAnyRentalBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate)
         {
-            return CheckIfCarAvailableBetweenSelectedDatesForReservations(carId, rentDate, returnDate);
+            if (rentDate > DateTime.Now) //Reservation
+            {
+                return CheckIfCarAvailableBetweenSelectedDatesForReservations(carId, rentDate, returnDate);
+            }   //Rental
+            return CheckIfCarAvailableBetweenSelectedDatesForCurrentRentals(carId, rentDate, returnDate);
         }
 
         [SecuredOperation("admin,rental.all,rental.list")]
@@ -130,6 +141,89 @@ namespace Business.Concrete
 
             _rentalDal.Update(rental);
             return new SuccessResult(Messages.RentalUpdated);
+        }
+
+        [SecuredOperation("admin,rental.all,rental.rent,customer")]
+        [ValidationAspect(typeof(RentPaymentRequestValidator))]
+        [TransactionScopeAspect]
+        public IDataResult<int> Rent(RentPaymentRequest rentPaymentRequest)
+        {
+            //Get CreditCard
+            var creditCardResult = _creditCardService.Get(rentPaymentRequest.CardNumber, rentPaymentRequest.ExpireYear, rentPaymentRequest.ExpireMonth, rentPaymentRequest.Cvc, rentPaymentRequest.CardHolderFullName.ToUpper());
+
+            List<Rental> verifiedRentals = new List<Rental>();
+            decimal totalAmount = 0;
+
+            if (creditCardResult.Success)
+            {
+                //Verify Rentals
+                foreach (var rental in rentPaymentRequest.Rentals)
+                {
+                    IResult rulesResult;
+                    bool? deliveryStatus = false;
+                    if (rental.RentDate > DateTime.Now) //Reservation
+                    {
+                        rulesResult = BusinessRules.Run(CheckIfCarAvailableBetweenSelectedDatesForReservations(rental.CarId, rental.RentDate, rental.ReturnDate), CheckIfReturnDateGreaterThanRentDate(rental.RentDate, rental.ReturnDate), CheckIfCustomerIdsAreEqual(rentPaymentRequest.CustomerId, rental.CustomerId));
+
+                        if (!CheckIfCarAvailableNow(rental.CarId).Success && rental.RentDate < GetReturnDateOfRentedCar(rental.CarId).Data)
+                        {
+                            return new ErrorDataResult<int>(-1, Messages.CarAlreadyRentedByTheReservationDate);
+                        }
+
+                        deliveryStatus = null;
+                    }
+                    else //Rent now
+                    {
+                        rulesResult = BusinessRules.Run(CheckIfCarAvailableNow(rental.CarId), CheckIfReturnDateGreaterThanRentDate(rental.RentDate, rental.ReturnDate), CheckIfCustomerIdsAreEqual(rentPaymentRequest.CustomerId, rental.CustomerId));
+                    }
+
+                    if (rulesResult != null)
+                    {
+                        return new ErrorDataResult<int>(-1, rulesResult.Message);
+                    }
+
+                    rental.DeliveryStatus = deliveryStatus;
+                    verifiedRentals.Add(rental);
+
+                    //Get Amount
+                    var carDailyPrice = _carService.GetById(rental.CarId).Data.DailyPrice;
+                    var rentalPeriod = GetRentalPeriod(rental.RentDate, rental.ReturnDate);
+                    var amount = carDailyPrice * rentalPeriod;
+                    totalAmount += amount;
+                }
+
+                //Check Total Amount
+                if (totalAmount != rentPaymentRequest.Amount)
+                {
+                    return new ErrorDataResult<int>(-1, Messages.TotalAmountNotMatch);
+                }
+
+                //Pay
+                var creditCard = creditCardResult.Data;
+                var paymentResult = _paymentService.Pay(creditCard, rentPaymentRequest.CustomerId, rentPaymentRequest.Amount);
+
+                //Verify payment
+                if (paymentResult.Success && paymentResult.Data != -1)
+                {
+                    //Add rentals on db
+                    foreach (var verifiedRental in verifiedRentals)
+                    {
+                        verifiedRental.PaymentId = paymentResult.Data;
+
+                        //Add Rental
+                        var rentalAddResult = Add(verifiedRental);
+
+                        //Check Rental
+                        if (!rentalAddResult.Success)
+                        {
+                            return new ErrorDataResult<int>(-1, rentalAddResult.Message);
+                        }
+                    }
+                    return new SuccessDataResult<int>(paymentResult.Data, Messages.RentalSuccessful);
+                }
+                return new ErrorDataResult<int>(-1, paymentResult.Message);
+            }
+            return new ErrorDataResult<int>(-1, creditCardResult.Message);
         }
 
         [SecuredOperation("admin,rental.all,rental.delete")]
@@ -262,6 +356,31 @@ namespace Business.Concrete
 
                 return new SuccessResult();
             }
+        }
+
+        private IResult CheckIfReturnDateGreaterThanRentDate(DateTime rentDate, DateTime returnDate)
+        {
+            if (returnDate > rentDate)
+            {
+                return new SuccessResult();
+            }
+
+            return new ErrorResult(Messages.RentDateMustBeGreaterThanReturnDate);
+        }
+
+        private IResult CheckIfCustomerIdsAreEqual(int customerIdInPayment, int customerIdInRental)
+        {
+            if (customerIdInPayment == customerIdInRental)
+            {
+                return new SuccessResult();
+            }
+
+            return new ErrorResult(Messages.LeastOneCustomerIdDoesNotMatch);
+        }
+
+        private int GetRentalPeriod(DateTime rentDate, DateTime returnDate)
+        {
+            return (Convert.ToInt32((returnDate - rentDate).TotalDays));
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.Concrete.EntityFramework
 {
-    public class RentACarContext:DbContext
+    public class RentACarContext : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -20,6 +20,7 @@ namespace DataAccess.Concrete.EntityFramework
         public DbSet<CarImage> CarImages { get; set; }
         public DbSet<OperationClaim> OperationClaims { get; set; }
         public DbSet<UserOperationClaim> UserOperationClaims { get; set; }
-
+        public DbSet<CreditCard> CreditCards { get; set; }
+        public DbSet<Payment> Payments { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace ConsoleUI
 
         private static void RentACarTest(int numberOfRentalsToAdd)
         {
-            RentalManager rentalManager = new RentalManager(new EfRentalDal());
+            RentalManager rentalManager = new RentalManager(new EfRentalDal(), new PaymentManager(new EfPaymentDal(), new CreditCardManager(new EfCreditCardDal())), new CreditCardManager(new EfCreditCardDal()), new CarManager(new EfCarDal()));
             CarManager carManager = new CarManager(new EfCarDal());
             CustomerManager customerManager = new CustomerManager(new EfCustomerDal());
 
@@ -161,7 +161,7 @@ namespace ConsoleUI
             ColorManager colorManager = new ColorManager(new EfColorDal());
             foreach (var colorName in colorList)
             {
-                colorManager.Add(new Color{Name = colorName});
+                colorManager.Add(new Color { Name = colorName });
             }
             Console.WriteLine("+Add colors test successful");
         }
@@ -172,7 +172,7 @@ namespace ConsoleUI
             BrandManager brandManager = new BrandManager(new EfBrandDal());
             foreach (var brandName in brandList)
             {
-                brandManager.Add(new Brand {Name = brandName});
+                brandManager.Add(new Brand { Name = brandName });
             };
             Console.WriteLine("+Add brands test successful");
         }
