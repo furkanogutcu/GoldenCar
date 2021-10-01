@@ -65,6 +65,7 @@
         public static string CarImageIdNotExist = "Araba resmi mevcut degil";
         public static string UserAlreadyCustomer = "Kullanici zaten bir musteridir";
         public static string GetDefaultImage = "Arabanin bir resmi olmadigi icin varsayilan resim getirildi";
+        public static string NoPictureOfTheCar = "Arabanin hic resmi yok";
 
         public static string AuthorizationDenied = "Bu islemi yapmak icin yetkiniz yok";
         public static string UserRegistered = "Kullanici kayit basarili";

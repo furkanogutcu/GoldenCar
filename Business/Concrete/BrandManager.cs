@@ -54,6 +54,7 @@ namespace Business.Concrete
         [SecuredOperation("admin,brand.all,brand.update")]
         [ValidationAspect(typeof(BrandValidator))]
         [CacheRemoveAspect("IBrandService.Get")]
+        [CacheRemoveAspect("ICarService.Get")]
         public IResult Update(Brand brand)
         {
             var rulesResult = BusinessRules.Run(CheckIfBrandNameExist(brand.Name),
@@ -69,15 +70,16 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,brand.all,brand.delete")]
         [CacheRemoveAspect("IBrandService.Get")]
-        public IResult Delete(int brandId)
+        [CacheRemoveAspect("ICarService.Get")]
+        public IResult Delete(Brand brand)
         {
-            var rulesResult = BusinessRules.Run(CheckIfBrandIdExist(brandId));
+            var rulesResult = BusinessRules.Run(CheckIfBrandIdExist(brand.Id));
             if (rulesResult != null)
             {
                 return rulesResult;
             }
 
-            var deletedBrand = _brandDal.Get(b => b.Id == brandId);
+            var deletedBrand = _brandDal.Get(b => b.Id == brand.Id);
             _brandDal.Delete(deletedBrand);
             return new SuccessResult(Messages.BrandDeleted);
         }

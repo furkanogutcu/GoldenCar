@@ -9,6 +9,7 @@ using Core.Aspects.Autofac.Caching;
 using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Business;
 using Core.Utilities.Helpers;
+using Core.Utilities.Helpers.FileHelper;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -53,9 +54,10 @@ namespace Business.Concrete
         [SecuredOperation("admin,carimage.all,carimage.add")]
         [ValidationAspect(typeof(CarImageValidator))]
         [CacheRemoveAspect("ICarImageService.Get")]
-        public IResult Add(CarImage carImage, IFormFile file)
+        [CacheRemoveAspect("ICarService.Get")]
+        public IResult Add(IFormFile file, int carId)
         {
-            IResult rulesResult = BusinessRules.Run(CheckIfCarImageLimitExceeded(carImage.CarId));
+            IResult rulesResult = BusinessRules.Run(CheckIfCarImageLimitExceeded(carId));
             if (rulesResult != null)
             {
                 return rulesResult;
@@ -66,8 +68,13 @@ namespace Business.Concrete
             {
                 return new ErrorResult(imageResult.Message);
             }
-            carImage.ImagePath = imageResult.Message;
-            carImage.Date = DateTime.Now;
+
+            CarImage carImage = new CarImage
+            {
+                ImagePath = imageResult.Message,
+                CarId = carId,
+                Date = DateTime.Now
+            };
             _carImageDal.Add(carImage);
             return new SuccessResult(Messages.CarImageAdded);
         }
@@ -75,6 +82,7 @@ namespace Business.Concrete
         [SecuredOperation("admin,carimage.all,carimage.update")]
         [ValidationAspect(typeof(CarImageValidator))]
         [CacheRemoveAspect("ICarImageService.Get")]
+        [CacheRemoveAspect("ICarService.Get")]
         public IResult Update(CarImage carImage, IFormFile file)
         {
             IResult rulesResult = BusinessRules.Run(CheckIfCarImageIdExist(carImage.Id),
@@ -98,21 +106,40 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,carimage.all,carimage.delete")]
         [CacheRemoveAspect("ICarImageService.Get")]
-        public IResult Delete(int imageId)
+        [CacheRemoveAspect("ICarService.Get")]
+        public IResult Delete(CarImage carImage)
         {
-            IResult rulesResult = BusinessRules.Run(CheckIfCarImageIdExist(imageId));
+            IResult rulesResult = BusinessRules.Run(CheckIfCarImageIdExist(carImage.Id));
             if (rulesResult != null)
             {
                 return rulesResult;
             }
 
-            var deletedImage = _carImageDal.Get(c => c.Id == imageId);
+            var deletedImage = _carImageDal.Get(c => c.Id == carImage.Id);
             var result = FileHelper.Delete(deletedImage.ImagePath);
             if (!result.Success)
             {
                 return new ErrorResult(Messages.ErrorDeletingImage);
             }
             _carImageDal.Delete(deletedImage);
+            return new SuccessResult(Messages.CarImageDeleted);
+        }
+
+        [SecuredOperation("admin,carimage.all,carimage.delete")]
+        [CacheRemoveAspect("ICarImageService.Get")]
+        [CacheRemoveAspect("ICarService.Get")]
+        public IResult DeleteAllImagesOfCarByCarId(int carId)
+        {
+            var deletedImages = _carImageDal.GetAll(c => c.CarId == carId);
+            if (deletedImages == null)
+            {
+                return new ErrorResult(Messages.NoPictureOfTheCar);
+            }
+            foreach (var deletedImage in deletedImages)
+            {
+                _carImageDal.Delete(deletedImage);
+                FileHelper.Delete(deletedImage.ImagePath);
+            }
             return new SuccessResult(Messages.CarImageDeleted);
         }
 
@@ -145,7 +172,7 @@ namespace Business.Concrete
                 };
                 return new SuccessDataResult<List<CarImage>>(imageList, Messages.GetDefaultImage);
             }
-            return new ErrorDataResult<List<CarImage>>(new List<CarImage>(),Messages.CarImagesListed);
+            return new ErrorDataResult<List<CarImage>>(new List<CarImage>(), Messages.CarImagesListed);
         }
 
         private IResult CheckIfCarImageIdExist(int imageId)

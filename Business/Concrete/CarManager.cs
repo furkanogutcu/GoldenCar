@@ -17,10 +17,12 @@ namespace Business.Concrete
     public class CarManager : ICarService
     {
         private readonly ICarDal _carDal;
+        private readonly ICarImageService _carImageService;
 
-        public CarManager(ICarDal carDal)
+        public CarManager(ICarDal carDal, ICarImageService carImageService)
         {
             _carDal = carDal;
+            _carImageService = carImageService;
         }
 
         [SecuredOperation("admin,car.all,car.list")]
@@ -40,10 +42,21 @@ namespace Business.Concrete
         [SecuredOperation("admin,car.all,car.add")]
         [ValidationAspect(typeof(CarValidator))]
         [CacheRemoveAspect("ICarService.Get")]
-        public IResult Add(Car car)
+        public IDataResult<int> Add(Car car)
         {
             _carDal.Add(car);
-            return new SuccessResult(Messages.CarAdded);
+            var result = _carDal.Get(c =>
+                c.ModelName == car.ModelName &&
+                c.Description == car.Description &&
+                c.BrandId == car.BrandId &&
+                c.ColorId == car.ColorId &&
+                c.DailyPrice == car.DailyPrice &&
+                c.ModelYear == car.ModelYear);
+            if (result != null)
+            {
+                return new SuccessDataResult<int>(result.Id, Messages.CarAdded);
+            }
+            return new ErrorDataResult<int>(-1, "Araç eklenirken bir sorun oldu");
         }
 
         [SecuredOperation("admin,car.all,car.update")]
@@ -62,15 +75,16 @@ namespace Business.Concrete
 
         [SecuredOperation("admin,car.all,car.delete")]
         [CacheRemoveAspect("ICarService.Get")]
-        public IResult Delete(int carId)
+        public IResult Delete(Car car)
         {
-            var rulesResult = BusinessRules.Run(CheckIfCarIdExist(carId));
+            var rulesResult = BusinessRules.Run(CheckIfCarIdExist(car.Id));
             if (rulesResult != null)
             {
                 return rulesResult;
             }
 
-            var deletedCar = _carDal.Get(c => c.Id == carId);
+            var deletedCar = _carDal.Get(c => c.Id == car.Id);
+            _carImageService.DeleteAllImagesOfCarByCarId(deletedCar.Id);
             _carDal.Delete(deletedCar);
             return new SuccessResult(Messages.CarDeleted);
         }
@@ -107,7 +121,7 @@ namespace Business.Concrete
         [CacheAspect(10)]
         public IDataResult<List<CarDetailDto>> GetCarsByBrandIdWithDetails(int brandId)
         {
-            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c=>c.BrandId==brandId), Messages.CarsListed);
+            return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c => c.BrandId == brandId), Messages.CarsListed);
         }
 
         [SecuredOperation("admin,car.all,car.list")]
