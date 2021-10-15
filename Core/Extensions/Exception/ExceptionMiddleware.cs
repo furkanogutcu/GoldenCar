@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using FluentValidation;
@@ -45,6 +46,18 @@ namespace Core.Extensions.Exception
                     StatusCode = 400,
                     Message = message,
                     ValidationErrors = validationErrors
+                }.ToString());
+            }
+
+            if (e.GetType() == typeof(UnauthorizedAccessException))
+            {
+                message = "Unauthorized";
+                httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+
+                return httpContext.Response.WriteAsync(new ErrorDetails()
+                {
+                    StatusCode = 401,
+                    Message = message
                 }.ToString());
             }
 

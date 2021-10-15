@@ -1,10 +1,13 @@
 ﻿using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
 using Core.Entities.Concrete;
 using Core.Utilities.Results;
 using Core.Utilities.Security.Hashing;
 using Core.Utilities.Security.Jwt;
 using Entities.DTOs;
+using Entities.Models;
 
 namespace Business.Concrete
 {
@@ -19,6 +22,7 @@ namespace Business.Concrete
             _tokenHelper = tokenHelper;
         }
 
+        [ValidationAspect(typeof(UserForRegisterDtoValidator))]
         public IDataResult<User> Register(UserForRegisterDto userForRegisterDto, string password)
         {
             byte[] passwordHash, passwordSalt;
@@ -36,6 +40,7 @@ namespace Business.Concrete
             return new SuccessDataResult<User>(user, Messages.UserRegistered);
         }
 
+        [ValidationAspect(typeof(UserForLoginDtoValidator))]
         public IDataResult<User> Login(UserForLoginDto userForLoginDto)
         {
             var userToCheck = _userService.GetUserByMail(userForLoginDto.Email);
@@ -66,6 +71,29 @@ namespace Business.Concrete
             var claims = _userService.GetClaims(user);
             var accessToken = _tokenHelper.CreateToken(user, claims.Data);
             return new SuccessDataResult<AccessToken>(accessToken, Messages.AccessTokenCreated);
+        }
+
+        [ValidationAspect(typeof(ChangePasswordValidator))]
+        public IResult ChangePassword(ChangePasswordModel updatedUser)
+        {
+            UserForLoginDto checkedUser = new UserForLoginDto
+            {
+                Email = updatedUser.Email,
+                Password = updatedUser.OldPassword
+            };
+            var loginResult = Login(checkedUser);
+            if (loginResult.Success)
+            {
+                var user = loginResult.Data;
+                byte[] passwordHash, passwordSalt;
+                HashingHelper.CreatePasswordHash(updatedUser.NewPassword, out passwordHash, out passwordSalt);
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                _userService.Update(user);
+                return new SuccessResult(Messages.PasswordChanged);
+            }
+
+            return new ErrorResult(loginResult.Message);
         }
     }
 }

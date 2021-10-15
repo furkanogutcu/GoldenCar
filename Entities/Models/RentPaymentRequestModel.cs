@@ -1,6 +1,8 @@
-﻿namespace Entities.Concrete
+﻿using Entities.Concrete;
+
+namespace Entities.Models
 {
-    public class RentPaymentRequest
+    public class RentPaymentRequestModel
     {
         public string CardNumber { get; set; }
         public string ExpireYear { get; set; }

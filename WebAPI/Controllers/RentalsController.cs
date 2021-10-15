@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Business.Abstract;
 using Entities.Concrete;
+using Entities.Models;
 
 namespace WebAPI.Controllers
 {
@@ -116,8 +118,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("rent")]
-        public IActionResult Rent(RentPaymentRequest rentPaymentRequest)
+        public IActionResult Rent(RentPaymentRequestModel rentPaymentRequest)
         {
+            Thread.Sleep(5000);
             var result = _rentalService.Rent(rentPaymentRequest);
             if (result.Success)
             {

@@ -1,11 +1,11 @@
-﻿using Core.Entities.Concrete;
+﻿using Entities.DTOs;
 using FluentValidation;
 
 namespace Business.ValidationRules.FluentValidation
 {
-    public class UserValidator : AbstractValidator<User>
+    public class UserDtoValidator : AbstractValidator<UserDto>
     {
-        public UserValidator()
+        public UserDtoValidator()
         {
             RuleFor(u => u.FirstName).NotEmpty();
             RuleFor(u => u.FirstName).NotNull();

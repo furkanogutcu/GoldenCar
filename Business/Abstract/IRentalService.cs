@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Core.Utilities.Results;
 using Entities.Concrete;
 using Entities.DTOs;
+using Entities.Models;
 
 namespace Business.Abstract
 {
@@ -17,6 +18,6 @@ namespace Business.Abstract
         IResult Add(Rental rental);
         IResult Delete(int rentalId);
         IResult Update(Rental rental);
-        IDataResult<int> Rent(RentPaymentRequest rentPaymentRequest);
+        IDataResult<int> Rent(RentPaymentRequestModel rentPaymentRequest);
     }
 }

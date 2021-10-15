@@ -8,6 +8,7 @@ using Core.Entities.Concrete;
 using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
+using Entities.DTOs;
 
 namespace Business.Concrete
 {
@@ -25,9 +26,19 @@ namespace Business.Concrete
             return new SuccessDataResult<List<User>>(_userDal.GetAll(), Messages.UsersListed);
         }
 
+        public IDataResult<List<UserDto>> GetAllDto()
+        {
+            return new SuccessDataResult<List<UserDto>>(_userDal.GetUsersDtos(), Messages.UsersListed);
+        }
+
         public IDataResult<User> GetUserById(int userId)
         {
             return new SuccessDataResult<User>(_userDal.Get(u => u.Id == userId), Messages.UserListed);
+        }
+
+        public IDataResult<UserDto> GetUserDtoById(int userId)
+        {
+            return new SuccessDataResult<UserDto>(_userDal.GetUsersDtos(u => u.Id == userId).SingleOrDefault(), Messages.UserListed);
         }
 
         [ValidationAspect(typeof(UserValidator))]
@@ -47,13 +58,35 @@ namespace Business.Concrete
         public IResult Update(User user)
         {
             var rulesResult = BusinessRules.Run(CheckIfUserIdExist(user.Id)
-                , CheckIfEmailExist(user.Email));
+                , CheckIfEmailAvailable(user.Email));
             if (rulesResult != null)
             {
                 return rulesResult;
             }
 
             _userDal.Update(user);
+            return new SuccessResult(Messages.UserUpdated);
+        }
+
+        [ValidationAspect(typeof(UserDtoValidator))]
+        public IResult UpdateByDto(UserDto userDto)
+        {
+            var rulesResult = BusinessRules.Run(CheckIfUserIdExist(userDto.Id)
+                , CheckIfEmailAvailable(userDto.Email));
+            if (rulesResult != null)
+            {
+                return rulesResult;
+            }
+
+            var updatedUser = _userDal.Get(u => u.Id == userDto.Id && u.Email == userDto.Email);
+            if (updatedUser == null)
+            {
+                return new ErrorResult(Messages.UserNotFound);
+            }
+
+            updatedUser.FirstName = userDto.FirstName;
+            updatedUser.LastName = userDto.LastName;
+            _userDal.Update(updatedUser);
             return new SuccessResult(Messages.UserUpdated);
         }
 
@@ -72,6 +105,11 @@ namespace Business.Concrete
         public IDataResult<User> GetUserByMail(string email)
         {
             return new SuccessDataResult<User>(_userDal.Get(u => u.Email == email));
+        }
+
+        public IDataResult<UserDto> GetUserDtoByMail(string email)
+        {
+            return new SuccessDataResult<UserDto>(_userDal.GetUsersDtos(u => u.Email == email).SingleOrDefault(), Messages.UserListed);
         }
 
         public IResult Delete(int userId)
@@ -101,12 +139,27 @@ namespace Business.Concrete
 
         private IResult CheckIfEmailExist(string userEmail)
         {
-            var result = _userDal.GetAll(u => u.Email == userEmail).Any();
+            var result = BaseCheckIfEmailExist(userEmail);
             if (result)
             {
                 return new ErrorResult(Messages.UserEmailExist);
             }
             return new SuccessResult();
+        }
+
+        private IResult CheckIfEmailAvailable(string userEmail)
+        {
+            var result = BaseCheckIfEmailExist(userEmail);
+            if (!result)
+            {
+                return new ErrorResult(Messages.UserEmailNotAvailable);
+            }
+            return new SuccessResult();
+        }
+
+        private bool BaseCheckIfEmailExist(string userEmail)
+        {
+            return _userDal.GetAll(u => u.Email == userEmail).Any();
         }
     }
 }
