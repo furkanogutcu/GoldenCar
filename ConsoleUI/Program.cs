@@ -37,8 +37,8 @@ namespace ConsoleUI
 
         private static void RentACarTest(int numberOfRentalsToAdd)
         {
-            RentalManager rentalManager = new RentalManager(new EfRentalDal(), new PaymentManager(new EfPaymentDal(), new CreditCardManager(new EfCreditCardDal())), new CreditCardManager(new EfCreditCardDal()), new CarManager(new EfCarDal()));
-            CarManager carManager = new CarManager(new EfCarDal());
+            RentalManager rentalManager = new RentalManager(new EfRentalDal(), new PaymentManager(new EfPaymentDal(), new CreditCardManager(new EfCreditCardDal())), new CreditCardManager(new EfCreditCardDal()), new CarManager(new EfCarDal(),new CarImageManager(new EfCarImageDal())));
+            CarManager carManager = new CarManager(new EfCarDal(),new CarImageManager(new EfCarImageDal()));
             CustomerManager customerManager = new CustomerManager(new EfCustomerDal());
 
             var carIds = carManager.GetAll().Data.Select(c => c.Id).ToList();
@@ -115,7 +115,7 @@ namespace ConsoleUI
 
         private static void CarManagerAddTest()
         {
-            CarManager carManager = new CarManager(new EfCarDal());
+            CarManager carManager = new CarManager(new EfCarDal(),new CarImageManager(new EfCarImageDal()));
             carManager.Add(new Car { BrandId = 1, ColorId = 3, ModelName = "X5 xDrive45E", ModelYear = 2010, DailyPrice = 500, Description = "1.2 liter engine" });
             carManager.Add(new Car { BrandId = 6, ColorId = 2, ModelName = "S60", ModelYear = 2015, DailyPrice = 750, Description = "1.4 liter engine" });
             carManager.Add(new Car { BrandId = 2, ColorId = 7, ModelName = "Benz E300", ModelYear = 2012, DailyPrice = 900, Description = "1.4 liter engine" });

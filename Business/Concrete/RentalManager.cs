@@ -13,6 +13,7 @@ using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using Entities.Models;
 
 namespace Business.Concrete
 {
@@ -45,7 +46,7 @@ namespace Business.Concrete
             return new SuccessDataResult<Rental>(_rentalDal.Get(r => r.Id == rentalId), Messages.RentalListed);
         }
 
-        [SecuredOperation("admin,rental.all,rental.list")]
+        //[SecuredOperation("admin,rental.all,rental.list")]
         public IDataResult<bool> CheckIfCanCarBeRentedNow(int carId)
         {
             var rulesResult = BusinessRules.Run(CheckIfCarAvailableNow(carId));
@@ -56,7 +57,7 @@ namespace Business.Concrete
             return new SuccessDataResult<bool>(true);
         }
 
-        [SecuredOperation("admin,rental.all,rental.list")]
+        //[SecuredOperation("admin,rental.all,rental.list")]
         public IDataResult<bool> CheckIfAnyRentalBetweenSelectedDates(int carId, DateTime rentDate, DateTime returnDate)
         {
             if (rentDate > DateTime.Now) //Reservation
@@ -146,7 +147,7 @@ namespace Business.Concrete
         [SecuredOperation("admin,rental.all,rental.rent,customer")]
         [ValidationAspect(typeof(RentPaymentRequestValidator))]
         [TransactionScopeAspect]
-        public IDataResult<int> Rent(RentPaymentRequest rentPaymentRequest)
+        public IDataResult<int> Rent(RentPaymentRequestModel rentPaymentRequest)
         {
             //Get CreditCard
             var creditCardResult = _creditCardService.Get(rentPaymentRequest.CardNumber, rentPaymentRequest.ExpireYear, rentPaymentRequest.ExpireMonth, rentPaymentRequest.Cvc, rentPaymentRequest.CardHolderFullName.ToUpper());

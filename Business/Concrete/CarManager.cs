@@ -25,14 +25,14 @@ namespace Business.Concrete
             _carImageService = carImageService;
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<Car> GetById(int id)
         {
             return new SuccessDataResult<Car>(_carDal.Get(c => c.Id == id), Messages.CarListed);
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<List<Car>> GetAll()
         {
@@ -103,35 +103,35 @@ namespace Business.Concrete
             return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.ColorId == id), Messages.CarsListed);
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<List<CarDetailDto>> GetCarsWithDetails()
         {
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(), Messages.CarsListed);
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<CarDetailDto> GetCarDetails(int carId)
         {
             return new SuccessDataResult<CarDetailDto>(_carDal.GetCarDetails(c => c.Id == carId).SingleOrDefault(), Messages.CarListed);
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<List<CarDetailDto>> GetCarsByBrandIdWithDetails(int brandId)
         {
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c => c.BrandId == brandId), Messages.CarsListed);
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<List<CarDetailDto>> GetCarsByColorIdWithDetails(int colorId)
         {
             return new SuccessDataResult<List<CarDetailDto>>(_carDal.GetCarDetails(c => c.ColorId == colorId), Messages.CarsListed);
         }
 
-        [SecuredOperation("admin,car.all,car.list")]
+        //[SecuredOperation("admin,car.all,car.list")]
         [CacheAspect(10)]
         public IDataResult<List<CarDetailDto>> GetCarsByFilterWithDetails(int brandId, int colorId)
         {

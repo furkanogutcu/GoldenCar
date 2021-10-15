@@ -22,14 +22,14 @@ namespace Business.Concrete
             _brandDal = brandDal;
         }
 
-        [SecuredOperation("admin,brand.all,brand.list")]
+        //[SecuredOperation("admin,brand.all,brand.list")]
         [CacheAspect(10)]
         public IDataResult<Brand> GetBrandById(int id)
         {
             return new SuccessDataResult<Brand>(_brandDal.Get(b => b.Id == id), Messages.BrandListed);
         }
 
-        [SecuredOperation("admin,brand.all,brand.list")]
+        //[SecuredOperation("admin,brand.all,brand.list")]
         [CacheAspect(10)]
         public IDataResult<List<Brand>> GetAll()
         {

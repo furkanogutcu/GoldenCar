@@ -22,14 +22,14 @@ namespace Business.Concrete
             _colorDal = colorDal;
         }
 
-        [SecuredOperation("admin,color.all,color.list")]
+        //[SecuredOperation("admin,color.all,color.list")]
         [CacheAspect(10)]
         public IDataResult<Color> GetColorById(int id)
         {
             return new SuccessDataResult<Color>(_colorDal.Get(c => c.Id == id), Messages.ColorListed);
         }
 
-        [SecuredOperation("admin,color.all,color.list")]
+        //[SecuredOperation("admin,color.all,color.list")]
         [CacheAspect(10)]
         public IDataResult<List<Color>> GetAll()
         {
