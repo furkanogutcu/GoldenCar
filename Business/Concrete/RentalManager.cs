@@ -23,13 +23,15 @@ namespace Business.Concrete
         private readonly IPaymentService _paymentService;
         private readonly ICreditCardService _creditCardService;
         private readonly ICarService _carService;
+        private readonly IFindexScoreService _findexScoreService;
 
-        public RentalManager(IRentalDal rentalDal, IPaymentService paymentService, ICreditCardService creditCardService, ICarService carService)
+        public RentalManager(IRentalDal rentalDal, IPaymentService paymentService, ICreditCardService creditCardService, ICarService carService, IFindexScoreService findexScoreService)
         {
             _rentalDal = rentalDal;
             _paymentService = paymentService;
             _creditCardService = creditCardService;
             _carService = carService;
+            _findexScoreService = findexScoreService;
         }
 
         [SecuredOperation("admin,rental.all,rental.list")]
@@ -149,6 +151,13 @@ namespace Business.Concrete
         [TransactionScopeAspect]
         public IDataResult<int> Rent(RentPaymentRequestModel rentPaymentRequest)
         {
+            //Get Customer Findex Score
+            var customerFindexScoreResult = _findexScoreService.GetCustomerFindexScore(rentPaymentRequest.CustomerId);
+            if (!customerFindexScoreResult.Success)
+            {
+                return new ErrorDataResult<int>(-1, customerFindexScoreResult.Message);
+            }
+
             //Get CreditCard
             var creditCardResult = _creditCardService.Get(rentPaymentRequest.CardNumber, rentPaymentRequest.ExpireYear, rentPaymentRequest.ExpireMonth, rentPaymentRequest.Cvc, rentPaymentRequest.CardHolderFullName.ToUpper());
 
@@ -181,6 +190,17 @@ namespace Business.Concrete
                     if (rulesResult != null)
                     {
                         return new ErrorDataResult<int>(-1, rulesResult.Message);
+                    }
+
+                    var carMinFindexScore = _findexScoreService.GetCarMinFindexScore(rental.CarId);
+                    if (!carMinFindexScore.Success)
+                    {
+                        return new ErrorDataResult<int>(-1, carMinFindexScore.Message);
+                    }
+
+                    if (customerFindexScoreResult.Data < carMinFindexScore.Data)
+                    {
+                        return new ErrorDataResult<int>(-1, Messages.InsufficientFindexScore);
                     }
 
                     rental.DeliveryStatus = deliveryStatus;

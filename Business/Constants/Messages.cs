@@ -40,6 +40,7 @@
         public static string CustomersListed = "Musteriler listelendi";
         public static string CustomerListed = "Musteri listelendi";
         public static string CustomerNotExist = "Musteri mevcut degil";
+        public static string NotAddedCustomer = "Müsteri eklenirken bir sorun olustu";
 
         public static string RentalAdded = "Kiralama eklendi";
         public static string RentalDeleted = "Kiralama silindi";
@@ -88,5 +89,6 @@
         public static string StringMustConsistOfNumbersOnly = "String, sadece sayilardan olusmalidir";
         public static string LeastOneCustomerIdDoesNotMatch = "Ödemedeki müsteri id'si ile en az bir kiralamadaki müsterinin id'si uyusmuyor";
         public static string TotalAmountNotMatch = "Kiralamalardaki toplam tutar ile ödenecek toplam tutar uyusmuyor";
+        public static string InsufficientFindexScore = "Müşteri findex puani, bazi araclari kiralamak icin yetersiz";
     }
 }

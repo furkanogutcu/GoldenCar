@@ -14,13 +14,15 @@ using Entities.DTOs;
 
 namespace Business.Concrete
 {
-    public class CustomerManager:ICustomerService
+    public class CustomerManager : ICustomerService
     {
         private readonly ICustomerDal _customerDal;
+        private readonly IUserService _userService;
 
-        public CustomerManager(ICustomerDal customerDal)
+        public CustomerManager(ICustomerDal customerDal, IUserService userService)
         {
             _customerDal = customerDal;
+            _userService = userService;
         }
 
         [SecuredOperation("admin,customer.all,customer.list")]
@@ -34,7 +36,26 @@ namespace Business.Concrete
         [CacheAspect(10)]
         public IDataResult<Customer> GetCustomerById(int customerId)
         {
-            return new SuccessDataResult<Customer>(_customerDal.Get(c=>c.Id == customerId), Messages.CustomerListed);
+            var result = _customerDal.Get(c => c.Id == customerId);
+            if (result != null)
+            {
+                return new SuccessDataResult<Customer>(result, Messages.CustomerListed);
+            }
+
+            return new ErrorDataResult<Customer>(null, Messages.CustomerNotExist);
+        }
+
+        //[SecuredOperation("admin,customer.all,customer.list")]
+        [CacheAspect(10)]
+        public IDataResult<Customer> GetCustomerByUserId(int userId)
+        {
+            var result = _customerDal.Get(c => c.UserId == userId);
+            if (result != null)
+            {
+                return new SuccessDataResult<Customer>(result, Messages.CustomerListed);
+            }
+
+            return new ErrorDataResult<Customer>(null, Messages.CustomerNotExist);
         }
 
         [SecuredOperation("admin,customer.all,customer.list")]
@@ -47,16 +68,22 @@ namespace Business.Concrete
         [SecuredOperation("admin,customer.all,customer.add")]
         [ValidationAspect(typeof(CustomerValidator))]
         [CacheRemoveAspect("ICustomerService.Get")]
-        public IResult Add(Customer customer)
+        public IDataResult<int> Add(Customer customer)
         {
-            var rulesResult = BusinessRules.Run(CheckIfUserIdExist(customer.UserId));
+            var rulesResult = BusinessRules.Run(CheckIfUserIdValid(customer.UserId), CheckIfUserIdExist(customer.UserId));
             if (rulesResult != null)
             {
-                return rulesResult;
+                return new ErrorDataResult<int>(-1, rulesResult.Message);
             }
 
             _customerDal.Add(customer);
-            return new SuccessResult(Messages.CustomerAdded);
+            var result = _customerDal.Get(c => c.UserId == customer.UserId && c.CompanyName == customer.CompanyName);
+            if (result != null)
+            {
+                return new SuccessDataResult<int>(result.Id, Messages.CustomerAdded);
+            }
+
+            return new ErrorDataResult<int>(-1, Messages.NotAddedCustomer);
         }
 
         [SecuredOperation("admin,customer.all,customer.update")]
@@ -108,6 +135,17 @@ namespace Business.Concrete
             {
                 return new ErrorResult(Messages.UserAlreadyCustomer);
             }
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfUserIdValid(int userId)
+        {
+            var result = _userService.GetUserById(userId);
+            if (!result.Success)
+            {
+                return new ErrorResult(Messages.UserNotExist);
+            }
+
             return new SuccessResult();
         }
     }

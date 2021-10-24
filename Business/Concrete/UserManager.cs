@@ -33,7 +33,13 @@ namespace Business.Concrete
 
         public IDataResult<User> GetUserById(int userId)
         {
-            return new SuccessDataResult<User>(_userDal.Get(u => u.Id == userId), Messages.UserListed);
+            var user = _userDal.Get(u => u.Id == userId);
+            if (user != null)
+            {
+                return new SuccessDataResult<User>(user, Messages.UserListed);
+            }
+
+            return new ErrorDataResult<User>(Messages.UserNotExist);
         }
 
         public IDataResult<UserDto> GetUserDtoById(int userId)
