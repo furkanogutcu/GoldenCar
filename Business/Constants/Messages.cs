@@ -90,5 +90,15 @@
         public static string LeastOneCustomerIdDoesNotMatch = "Ödemedeki müsteri id'si ile en az bir kiralamadaki müsterinin id'si uyusmuyor";
         public static string TotalAmountNotMatch = "Kiralamalardaki toplam tutar ile ödenecek toplam tutar uyusmuyor";
         public static string InsufficientFindexScore = "Müşteri findex puani, bazi araclari kiralamak icin yetersiz";
+
+        public static string CreditCardListed = "Kredi karti listelendi";
+        public static string CreditCardNotFound = "Kredi karti bulunamadi";
+        public static string CustomersCreditCardsListed = "Müsterinin kredi kartlari listelendi";
+        public static string CustomerCreditCardFailedToSave = "Müsteri kredi karti kaydedilemedi";
+        public static string CustomerCreditCardNotFound = "Müsteri kredi karti bulunamadi";
+        public static string CustomerCreditCardDeleted = "Musteri kredi karti basariyla silindi";
+        public static string CustomerCreditCardNotDeleted = "Musteri kredi karti silinemedi";
+        public static string CustomerCreditCardSaved = "Müsteri kredi karti basariyla kaydedildi";
+        public static string CustomerCreditCardAlreadySaved = "Kredi karti zaten kaydedilmis";
     }
 }

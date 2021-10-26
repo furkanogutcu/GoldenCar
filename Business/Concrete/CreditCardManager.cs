@@ -1,5 +1,4 @@
 ﻿using Business.Abstract;
-using Business.BusinessAspects.Autofac;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
@@ -29,6 +28,17 @@ namespace Business.Concrete
             return new ErrorDataResult<CreditCard>(null, Messages.CreditCardNotValid);
         }
 
+        public IDataResult<CreditCard> GetById(int creditCardId)
+        {
+            var creditCard = _creditCardDal.Get(c => c.Id == creditCardId);
+            if (creditCard != null)
+            {
+                return new SuccessDataResult<CreditCard>(creditCard, Messages.CreditCardListed);
+            }
+
+            return new ErrorDataResult<CreditCard>(null, Messages.CreditCardNotFound);
+        }
+
         //[SecuredOperation("admin,creditCard.all,creditCard.validate,customer")]
         [ValidationAspect(typeof(CreditCardValidator))]
         public IResult Validate(CreditCard creditCard)
@@ -55,7 +65,7 @@ namespace Business.Concrete
                                            c.ExpireYear == expireYear &&
                                            c.ExpireMonth == expireMonth &&
                                            c.Cvc == cvc &&
-                                           c.CardHolderFullName == cardHolderFullName.ToLower().ToUpper()); // Convert Turkish characters into standard characters.
+                                           c.CardHolderFullName == cardHolderFullName.ToUpperInvariant()); // Convert Turkish characters into standard characters.
         }
     }
 }

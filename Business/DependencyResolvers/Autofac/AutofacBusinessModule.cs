@@ -43,6 +43,9 @@ namespace Business.DependencyResolvers.Autofac
 
             builder.RegisterType<FindexScoreManager>().As<IFindexScoreService>().SingleInstance();
 
+            builder.RegisterType<CustomerCreditCardManager>().As<ICustomerCreditCardService>().SingleInstance();
+            builder.RegisterType<EfCustomerCreditCardDal>().As<ICustomerCreditCardDal>().SingleInstance();
+
             builder.RegisterType<AuthManager>().As<IAuthService>();
             builder.RegisterType<JwtHelper>().As<ITokenHelper>();
 
