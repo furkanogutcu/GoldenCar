@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31515.178
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{277B7388-DFD2-4FB5-ADD8-2E6F4BD2F95F}"
 EndProject
@@ -9,11 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entities", "Entities\Entiti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Business", "Business\Business.csproj", "{505B605D-DE86-4DEF-833D-A47712512E66}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleUI", "ConsoleUI\ConsoleUI.csproj", "{087CA677-6015-428B-B799-56DF1D209BDE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{80DC5A4F-2F80-4043-8124-9BE205FF7414}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI", "WebAPI\WebAPI.csproj", "{B3A8EDCB-0EFC-4CBC-B9EB-5A0007CD3CE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebAPI", "WebAPI\WebAPI.csproj", "{B3A8EDCB-0EFC-4CBC-B9EB-5A0007CD3CE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +31,6 @@ Global
 		{505B605D-DE86-4DEF-833D-A47712512E66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{505B605D-DE86-4DEF-833D-A47712512E66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{505B605D-DE86-4DEF-833D-A47712512E66}.Release|Any CPU.Build.0 = Release|Any CPU
-		{087CA677-6015-428B-B799-56DF1D209BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{087CA677-6015-428B-B799-56DF1D209BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{087CA677-6015-428B-B799-56DF1D209BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{087CA677-6015-428B-B799-56DF1D209BDE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{80DC5A4F-2F80-4043-8124-9BE205FF7414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{80DC5A4F-2F80-4043-8124-9BE205FF7414}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80DC5A4F-2F80-4043-8124-9BE205FF7414}.Release|Any CPU.ActiveCfg = Release|Any CPU
