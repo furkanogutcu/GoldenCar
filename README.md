@@ -27,7 +27,7 @@ GoldenCar is a car rental solution. This project includes an enterprise-grade so
    cd DataAccess
    dotnet ef database update
    ```
-   `NOTE:` Requires dotnet ef installation. Command for installation:
+   `NOTE:` Requires `dotnet ef` installation. Command for installation:
    ```sh
    dotnet tool install --global dotnet-ef
    ```
@@ -40,7 +40,7 @@ GoldenCar is a car rental solution. This project includes an enterprise-grade so
 After publishing the Web API, you can make HTTP requests like:
    
    ```sh
-   https:localhost:44372/api/`CONTROLLER_NAME`/`METHOD_NAME`
+   https://localhost:44372/api/`CONTROLLER_NAME`/`METHOD_NAME`
    ```
  
    `CONTROLLER_NAME` => Each .cs file located in the `WebAPI.Controllers` folder (For example CONTROLLER_NAME for `CarsController`: cars )
