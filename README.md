@@ -33,11 +33,11 @@ GoldenCar is a car rental solution. This project includes an enterprise-grade so
    ```
    
 5. Right click on the `WebAPI` project (layer) from the `Solution Explorer` and select `Set as Startup Project` 
-6. Start the project with `IIS Express` in Visual Studio. Web API is ready and live!
+6. Start the project with `IIS Express` in Visual Studio. Web API is ready and running!
 
 ### Usage
  
-After publishing the Web API, you can make HTTP requests like:
+After running the Web API, you can make HTTP requests like:
    
    ```sh
    https://localhost:44372/api/`CONTROLLER_NAME`/`METHOD_NAME`
